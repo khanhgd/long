@@ -12,7 +12,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="shortcut icon" href="futuristic-neon-glowing-rocket-icon-260nw-2676900473.webp" type="image/x-icon">
     <style>
         /* ============================================================
            DESIGN TOKENS
@@ -149,16 +148,16 @@
             font-weight: 600 !important;
             font-size: 0.9rem;
             text-decoration: none;
-            background: rgba(8, 102, 255, 0.15);
-            border: 1px solid rgba(8, 102, 255, 0.3);
+            background: rgba(24, 119, 242, 0.15);
+            border: 1px solid rgba(24, 119, 242, 0.3);
             padding: 8px 18px;
             border-radius: 100px;
             transition: all 0.3s ease;
         }
         .nav-facebook-btn:hover {
-            background: rgba(8, 102, 255, 0.3);
-            border-color: rgba(8, 102, 255, 0.5);
-            box-shadow: 0 0 20px rgba(8, 102, 255, 0.4);
+            background: rgba(24, 119, 242, 0.3);
+            border-color: rgba(24, 119, 242, 0.5);
+            box-shadow: 0 0 20px rgba(24, 119, 242, 0.4);
             transform: translateY(-2px);
         }
 
@@ -224,18 +223,6 @@
             box-shadow: 0 4px 20px rgba(139,92,246,0.45);
         }
         .hero-cta:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(139,92,246,0.6); }
-
-        .hero-facebook-btn {
-            background: rgba(8, 102, 255, 0.15) !important;
-            border: 1px solid rgba(8, 102, 255, 0.3) !important;
-            box-shadow: 0 4px 20px rgba(8, 102, 255, 0.25) !important;
-        }
-        .hero-facebook-btn:hover {
-            transform: translateY(-3px);
-            background: rgba(8, 102, 255, 0.3) !important;
-            border-color: rgba(8, 102, 255, 0.5) !important;
-            box-shadow: 0 8px 32px rgba(8, 102, 255, 0.5) !important;
-        }
 
         /* ============================================================
            STATS ROW
@@ -1074,6 +1061,264 @@
             text-shadow: 0 5px 25px rgba(255, 255, 255, 0.4);
         }
         
+
+        /* ============================================================
+           AUTH MODAL
+        ============================================================ */
+        #auth-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(4, 4, 10, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+        #auth-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .auth-modal {
+            width: 420px;
+            max-width: calc(100vw - 40px);
+            background: rgba(15, 12, 41, 0.92);
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 24px;
+            padding: 40px 36px 36px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04) inset, 0 0 60px rgba(139,92,246,0.12);
+            transform: translateY(24px) scale(0.97);
+            transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+            position: relative;
+        }
+        #auth-overlay.open .auth-modal {
+            transform: translateY(0) scale(1);
+        }
+        .auth-close-btn {
+            position: absolute;
+            top: 16px; right: 18px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #94a3b8;
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .auth-close-btn:hover { background: rgba(244,63,94,0.2); border-color: rgba(244,63,94,0.4); color: #fda4af; }
+        .auth-logo-mark {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg,#8b5cf6,#06b6d4);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 24px rgba(139,92,246,0.45);
+        }
+        .auth-heading {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg,#8b5cf6,#06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .auth-subhead {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-bottom: 28px;
+        }
+        /* Tabs */
+        .auth-tabs {
+            display: flex;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 28px;
+            gap: 4px;
+        }
+        .auth-tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 9px 0;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .auth-tab.active {
+            background: linear-gradient(135deg,rgba(139,92,246,0.25),rgba(6,182,212,0.15));
+            color: #f1f5f9;
+            border: 1px solid rgba(139,92,246,0.3);
+            box-shadow: 0 2px 12px rgba(139,92,246,0.2);
+        }
+        /* Form */
+        .auth-form { display: flex; flex-direction: column; gap: 16px; }
+        .auth-form-hidden { display: none !important; }
+        .auth-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .auth-field label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #94a3b8;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .auth-field input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: #f1f5f9;
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+        }
+        .auth-field input:focus {
+            border-color: rgba(139,92,246,0.6);
+            box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+        }
+        .auth-field input::placeholder { color: #475569; }
+        .auth-submit-btn {
+            background: linear-gradient(135deg,#8b5cf6,#06b6d4);
+            border: none;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 13px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 4px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+            box-shadow: 0 4px 20px rgba(139,92,246,0.4);
+        }
+        .auth-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(139,92,246,0.55); }
+        .auth-submit-btn:active { transform: translateY(0); }
+        .auth-error {
+            background: rgba(244,63,94,0.12);
+            border: 1px solid rgba(244,63,94,0.3);
+            color: #fda4af;
+            font-size: 0.82rem;
+            padding: 10px 14px;
+            border-radius: 8px;
+            display: none;
+        }
+        .auth-error.visible { display: block; }
+        .auth-success {
+            background: rgba(34,197,94,0.12);
+            border: 1px solid rgba(34,197,94,0.3);
+            color: #86efac;
+            font-size: 0.82rem;
+            padding: 10px 14px;
+            border-radius: 8px;
+            display: none;
+        }
+        .auth-success.visible { display: block; }
+        /* Nav auth button */
+        .nav-auth-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(139,92,246,0.15);
+            border: 1px solid rgba(139,92,246,0.35);
+            color: #c4b5fd;
+            padding: 7px 16px;
+            border-radius: 100px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+        .nav-auth-btn:hover {
+            background: rgba(139,92,246,0.3);
+            border-color: rgba(139,92,246,0.55);
+            color: #fff;
+            box-shadow: 0 0 18px rgba(139,92,246,0.35);
+            transform: translateY(-1px);
+        }
+        .nav-user-badge {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: rgba(6,182,212,0.1);
+            border: 1px solid rgba(6,182,212,0.25);
+            border-radius: 100px;
+            padding: 5px 14px 5px 6px;
+        }
+        .nav-user-badge.visible { display: flex; }
+        .nav-avatar {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: linear-gradient(135deg,#8b5cf6,#06b6d4);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .nav-username {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #67e8f9;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .nav-logout-btn {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 0.78rem;
+            cursor: pointer;
+            font-family: inherit;
+            padding: 0;
+            transition: color 0.2s ease;
+        }
+        .nav-logout-btn:hover { color: #fda4af; }
+        /* Password strength meter */
+        .strength-bar-wrap {
+            height: 4px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .strength-bar {
+            height: 100%;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+        .strength-label {
+            font-size: 0.72rem;
+            color: #64748b;
+            margin-top: 3px;
+        }
     </style>
 </head>
 <body>
@@ -1208,237 +1453,8 @@
     </div>
 
     <!-- Logic Script -->
-    <script>
-    /* ============================================================
-       SOLAR SYSTEM & INTERACTIVE STARFIELD LOGIC
-    ============================================================ */
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- Starfield with Parallax & Nebulas ---
-        const canvas = document.getElementById('starCanvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        let width, height;
-        
-        // Create offscreen canvas for nebula for high performance
-        const nebulaOuter = document.createElement('canvas');
-        const nCtx = nebulaOuter.getContext('2d', { alpha: true });
-        let nSize = 0;
-
-        function initCanvas() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            canvas.style.width = width + 'px';
-            canvas.style.height = height + 'px';
-            
-            nSize = Math.max(width, height) * 1.5;
-            nebulaOuter.width = nSize;
-            nebulaOuter.height = nSize;
-            const gradient = nCtx.createRadialGradient(nSize/2, nSize/2, 0, nSize/2, nSize/2, nSize/2 * 0.8);
-            gradient.addColorStop(0, 'rgba(139, 92, 246, 0.07)');
-            gradient.addColorStop(0.5, 'rgba(6, 182, 212, 0.03)');
-            gradient.addColorStop(1, 'transparent');
-            nCtx.fillStyle = gradient;
-            nCtx.fillRect(0, 0, nSize, nSize);
-        }
-        window.addEventListener('resize', initCanvas);
-        initCanvas();
-
-        const stars = [];
-        for(let i=0; i<300; i++) {
-            stars.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                radius: Math.random() * 1.5 + 0.5,
-                alpha: Math.random(),
-                speed: Math.random() * 0.03 + 0.01,
-                parallax: Math.random() * 0.4 + 0.05
-            });
-        }
-
-        const shootingStars = [];
-        function createShootingStar() {
-            shootingStars.push({
-                x: Math.random() * width * 1.5,
-                y: Math.random() * -height * 0.5,
-                len: Math.random() * 80 + 30,
-                speed: Math.random() * 15 + 10,
-                angle: Math.PI / 4 + (Math.random() - 0.5) * 0.2,
-                life: 1
-            });
-            setTimeout(createShootingStar, Math.random() * 5000 + 3000);
-        }
-        setTimeout(createShootingStar, 2000);
-
-        let pointer = { x: width/2, y: height/2, tx: width/2, ty: height/2 };
-        document.addEventListener('mousemove', (e) => {
-            pointer.tx = e.clientX;
-            pointer.ty = e.clientY;
-        });
-
-        function drawStars() {
-            pointer.x += (pointer.tx - pointer.x) * 0.05;
-            pointer.y += (pointer.ty - pointer.y) * 0.05;
-            
-            ctx.clearRect(0, 0, width, height);
-            
-            // Draw subtle nebulas matching mouse pos (using cached high-perf offscreen canvas)
-            const nx = width/2 + (pointer.x - width/2)*0.15 - nSize/2;
-            const ny = height/2 + (pointer.y - height/2)*0.15 - nSize/2;
-            ctx.drawImage(nebulaOuter, nx, ny);
-
-            ctx.shadowBlur = 0;
-            stars.forEach(s => {
-                s.alpha += s.speed;
-                
-                const dx = (width/2 - pointer.x) * s.parallax;
-                const dy = (height/2 - pointer.y) * s.parallax;
-                
-                let renderX = s.x + dx;
-                let renderY = s.y + dy;
-
-                // Wraparound logic
-                if (renderX < 0) s.x += width;
-                if (renderX > width) s.x -= width;
-                if (renderY < 0) s.y += height;
-                if (renderY > height) s.y -= height;
-                
-                ctx.beginPath();
-                ctx.arc(renderX, renderY, s.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${(Math.sin(s.alpha) + 1) / 2 * 0.8 + 0.2})`;
-                ctx.fill();
-            });
-
-            // Draw shooting stars
-            shootingStars.forEach((s, idx) => {
-                s.x -= Math.cos(s.angle) * s.speed;
-                s.y += Math.sin(s.angle) * s.speed;
-                s.life -= 0.015;
-                if(s.life <= 0) {
-                    shootingStars.splice(idx, 1);
-                    return;
-                }
-                
-                ctx.beginPath();
-                ctx.moveTo(s.x, s.y);
-                ctx.lineTo(s.x + Math.cos(s.angle) * s.len, s.y - Math.sin(s.angle) * s.len);
-                ctx.strokeStyle = `rgba(255, 255, 255, ${s.life * 0.8})`;
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-            });
-
-            requestAnimationFrame(drawStars);
-        }
-        drawStars();
-
-        // --- Planet Information Logic ---
-        const planetData = {
-            sun: { title: "Sun", type: "Yellow Dwarf Star", dist: "0 km", radius: "696,340 km", temp: "5,505 °C", desc: "The heart of our solar system, holding 99.8% of its mass.", color: "#ff8c00" },
-            mercury: { title: "Mercury", type: "Terrestrial Planet", dist: "57.9M km", radius: "2,439.7 km", temp: "167 °C", desc: "The smallest planet in our solar system and closest to the Sun—is only slightly larger than Earth's Moon.", color: "#a8a8a8" },
-            venus: { title: "Venus", type: "Terrestrial Planet", dist: "108.2M km", radius: "6,051.8 km", temp: "464 °C", desc: "Venus is the second planet from the Sun and is Earth's closest planetary neighbor. It's the hottest planet in our solar system.", color: "#d98d41" },
-            earth: { title: "Earth", type: "Terrestrial Planet", dist: "149.6M km", radius: "6,371 km", temp: "15 °C", desc: "Our home planet is the third planet from the Sun, and the only place we know of so far that's inhabited by living things.", color: "#5ca4ff" },
-            mars: { title: "Mars", type: "Terrestrial Planet", dist: "227.9M km", radius: "3,389.5 km", temp: "-65 °C", desc: "Mars is the fourth planet from the Sun – a dusty, cold, desert world with a very thin atmosphere.", color: "#ff7b54" },
-            jupiter: { title: "Jupiter", type: "Gas Giant", dist: "778.5M km", radius: "69,911 km", temp: "-110 °C", desc: "Jupiter has a long history of surprising scientists—all the way back to 1610 when Galileo Galilei found the first moons beyond Earth.", color: "#e0bd9b" },
-            saturn: { title: "Saturn", type: "Gas Giant", dist: "1.4B km", radius: "58,232 km", temp: "-140 °C", desc: "Saturn is the sixth planet from the Sun and the second-largest planet in our solar system. Adorned with a dazzling system of icy rings.", color: "#f4dcb1" },
-            uranus: { title: "Uranus", type: "Ice Giant", dist: "2.9B km", radius: "25,362 km", temp: "-195 °C", desc: "Uranus is the seventh planet from the Sun, and has the third-largest diameter in our solar system.", color: "#b8f0f0" },
-            neptune: { title: "Neptune", type: "Ice Giant", dist: "4.5B km", radius: "24,622 km", temp: "-200 °C", desc: "Dark, cold, and whipped by supersonic winds, ice giant Neptune is the eighth and most distant planet in our solar system.", color: "#526eff" }
-        };
-
-        const planets = document.querySelectorAll('.planet, .sun');
-        const infoPanel = document.getElementById('infoPanel');
-        const universe = document.getElementById('universe');
-        
-        const els = {
-            title: document.getElementById('infoTitle'),
-            type: document.getElementById('infoType'),
-            dist: document.getElementById('infoDistance'),
-            rad: document.getElementById('infoRadius'),
-            temp: document.getElementById('infoTemp'),
-            desc: document.getElementById('infoDesc'),
-            color: document.getElementById('infoColor')
-        };
-
-        let activePlanet = null;
-
-        planets.forEach(p => {
-            p.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = p.getAttribute('data-id');
-                const data = planetData[id];
-                if(!data) return;
-                
-                // Populate data
-                els.title.innerText = data.title;
-                els.type.innerText = data.type;
-                els.dist.innerText = data.dist;
-                els.rad.innerText = data.radius;
-                els.temp.innerText = data.temp;
-                els.desc.innerText = data.desc;
-                els.color.style.color = data.color;
-                
-                infoPanel.classList.add('active');
-                
-                // Zoom & Pan to planet
-                document.body.classList.add('paused');
-                activePlanet = p;
-                
-                // Reset transform to measure accurately
-                const prevTransition = universe.style.transition;
-                universe.style.transition = 'none';
-                universe.style.transform = 'translate(0px, 0px) scale(1)';
-                
-                // Force layout reflow
-                universe.offsetHeight; 
-                
-                const rect = p.getBoundingClientRect();
-                const uRect = universe.getBoundingClientRect();
-                
-                const pCenterX = rect.left + rect.width / 2;
-                const pCenterY = rect.top + rect.height / 2;
-                
-                const uCenterX = uRect.left + uRect.width / 2;
-                const uCenterY = uRect.top + uRect.height / 2;
-                
-                const offsetX = uCenterX - pCenterX;
-                const offsetY = uCenterY - pCenterY;
-                
-                // Restore transition and apply new transform
-                universe.style.transition = prevTransition || '';
-                // force layout
-                universe.offsetHeight;
-                universe.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(2.5)`;
-            });
-        });
-
-        // Click wrapper to reset viewing
-        document.getElementById('solar-hero').addEventListener('click', () => {
-            if(activePlanet) {
-                infoPanel.classList.remove('active');
-                document.body.classList.remove('paused');
-                universe.style.transform = `translate(0px, 0px) scale(1)`;
-                activePlanet = null;
-            }
-        });
-        
-        // Control Buttons
-        const btnPause = document.getElementById('togglePause');
-        if(btnPause) {
-            btnPause.addEventListener('click', (e) => {
-                e.stopPropagation();
-                document.body.classList.toggle('paused');
-                btnPause.innerText = document.body.classList.contains('paused') ? 'Play Animation' : 'Pause Animation';
-            });
-        }
-
-        const btnLabels = document.getElementById('toggleLabels');
-        if(btnLabels) {
-            btnLabels.addEventListener('click', (e) => {
-                e.stopPropagation();
-                document.body.classList.toggle('show-labels');
-                btnLabels.innerText = document.body.classList.contains('show-labels') ? 'Hide Labels' : 'Show Labels';
-            });
-        }
-    });
-    </script>    <a href="#portfolio-nav" class="scroll-hint">
+    
+    <a href="#portfolio-nav" class="scroll-hint">
         Explore Portfolio
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
     </a>
@@ -1458,12 +1474,21 @@
             <li><a href="#features">Features</a></li>
             <li><a href="#quickstart">Quick Start</a></li>
             <li><a href="#files">Files</a></li>
+            <li>
+                <!-- Auth controls -->
+                <div class="nav-user-badge" id="nav-user-badge">
+                    <div class="nav-avatar" id="nav-avatar-initial">K</div>
+                    <span class="nav-username" id="nav-username-display">User</span>
+                    <button class="nav-logout-btn" id="nav-logout-btn" title="Log out">✕</button>
+                </div>
+                <button class="nav-auth-btn" id="nav-login-btn" onclick="openAuthModal('login')">🔐 Login</button>
+            </li>
             <li><a href="https://github.com/hyuttgg/le-van-khanh.git" target="_blank" class="nav-github-btn">
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.45-1.15-1.11-1.46-1.11-1.46-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
                 GitHub
             </a></li>
             <li><a href="https://www.facebook.com/hun.le.van.hun/?locale=vi_VN" target="_blank" class="nav-facebook-btn">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.04c-5.5 0-10 4.48-10 10.02 0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 0 0 8.44-9.9c0-5.54-4.5-10.02-10-10.02z"/></svg>
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg>
                 Facebook
             </a></li>
         </ul>
@@ -1476,7 +1501,7 @@
         <p class="subtitle">
             Building cross-platform Python tools — from AI-powered virtual assistants and voice control to library management systems and computer vision.
         </p>
-        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <div style="display: flex; gap: 16px; justify-content: center;">
             <a href="#projects" class="hero-cta">
                 <span>View Projects</span>
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -1485,9 +1510,9 @@
                 <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.45-1.15-1.11-1.46-1.11-1.46-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
                 <span>GitHub Repo</span>
             </a>
-            <a href="https://www.facebook.com/hun.le.van.hun/?locale=vi_VN" target="_blank" class="hero-cta hero-facebook-btn">
-                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.04c-5.5 0-10 4.48-10 10.02 0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 0 0 8.44-9.9c0-5.54-4.5-10.02-10-10.02z"/></svg>
-                <span>Facebook</span>
+            <a href="https://www.facebook.com/hun.le.van.hun/?locale=vi_VN" target="_blank" class="hero-cta" style="background: rgba(24, 119, 242, 0.1); color: var(--text-primary); box-shadow: 0 4px 20px rgba(24, 119, 242, 0.3); border: 1px solid rgba(24, 119, 242, 0.4);">
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg>
+                <span>Facebook Profile</span>
             </a>
         </div>
     </section>
@@ -1849,6 +1874,66 @@
         </div>
         <p class="footer-copy">© 2025 Khanh — All rights reserved</p>
     </footer>
+</div>
+
+<!-- ============================================================
+     AUTH MODAL
+============================================================ -->
+<div id="auth-overlay" role="dialog" aria-modal="true" aria-label="Authentication">
+  <div class="auth-modal">
+    <button class="auth-close-btn" onclick="closeAuthModal()" title="Close">✕</button>
+    <div class="auth-logo-mark" style="overflow: hidden; padding: 2px;">
+      <img src="pngtree-wolf-logo-png-image_2306634.jpg" alt="Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+    </div>
+    <h2 class="auth-heading" id="auth-heading">Welcome Back</h2>
+    <p class="auth-subhead" id="auth-subhead">Sign in to your account to continue</p>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Log In</button>
+      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</button>
+    </div>
+
+    <!-- Login Form -->
+    <form class="auth-form" id="form-login" onsubmit="handleLogin(event)" autocomplete="on">
+      <div id="login-error" class="auth-error"></div>
+      <div id="login-success" class="auth-success"></div>
+      <div class="auth-field">
+        <label for="login-username">Username or Email</label>
+        <input type="text" id="login-username" placeholder="your username" autocomplete="username" required>
+      </div>
+      <div class="auth-field">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="auth-submit-btn">Log In →</button>
+    </form>
+
+    <!-- Register Form -->
+    <form class="auth-form auth-form-hidden" id="form-register" onsubmit="handleRegister(event)" autocomplete="on">
+      <div id="reg-error" class="auth-error"></div>
+      <div id="reg-success" class="auth-success"></div>
+      <div class="auth-field">
+        <label for="reg-username">Username</label>
+        <input type="text" id="reg-username" placeholder="choose a username" autocomplete="username" required minlength="3">
+      </div>
+      <div class="auth-field">
+        <label for="reg-email">Email</label>
+        <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email" required>
+      </div>
+      <div class="auth-field">
+        <label for="reg-password">Password</label>
+        <input type="password" id="reg-password" placeholder="min. 6 characters" autocomplete="new-password" required minlength="6" oninput="updateStrength(this.value)">
+        <div class="strength-bar-wrap"><div class="strength-bar" id="strength-bar"></div></div>
+        <span class="strength-label" id="strength-label">Enter a password</span>
+      </div>
+      <div class="auth-field">
+        <label for="reg-confirm">Confirm Password</label>
+        <input type="password" id="reg-confirm" placeholder="repeat password" autocomplete="new-password" required minlength="6">
+      </div>
+      <button type="submit" class="auth-submit-btn">Create Account →</button>
+    </form>
+  </div>
 </div>
 
 <noscript>
@@ -2333,35 +2418,13 @@
 
 <script>
 /* ============================================================
-   MAGICAL AURA & FLUID RIBBON BACKGROUND
+   PARTICLE BACKGROUND
 ============================================================ */
 (function() {
     var canvas = document.getElementById('bg-canvas');
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
-    var W, H;
-    var lines = [];
-    var mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2, tx: window.innerWidth / 2, ty: window.innerHeight / 2 };
-    
-    var colors = [
-        [139, 92, 246], // Violet
-        [6, 182, 212],  // Cyan
-        [245, 158, 11], // Amber
-        [236, 72, 153]  // Pink
-    ];
-    
-    // High performance cached cursor aura
-    var auraCanvas = document.createElement('canvas');
-    var actx = auraCanvas.getContext('2d', { alpha: true });
-    var AURA_RAD = 550;
-    auraCanvas.width = AURA_RAD * 2;
-    auraCanvas.height = AURA_RAD * 2;
-    var grad = actx.createRadialGradient(AURA_RAD, AURA_RAD, 0, AURA_RAD, AURA_RAD, AURA_RAD);
-    grad.addColorStop(0, 'rgba(139, 92, 246, 0.16)');
-    grad.addColorStop(0.3, 'rgba(6, 182, 212, 0.05)');
-    grad.addColorStop(1, 'transparent');
-    actx.fillStyle = grad;
-    actx.fillRect(0, 0, AURA_RAD * 2, AURA_RAD * 2);
+    var W, H, particles = [], PARTICLE_COUNT = 70;
 
     function resize() {
         W = canvas.width  = window.innerWidth;
@@ -2370,127 +2433,61 @@
     window.addEventListener('resize', resize);
     resize();
 
-    window.addEventListener('mousemove', function(e) {
-        mouse.tx = e.clientX;
-        mouse.ty = e.clientY;
-        if(Math.random() > 0.6) spawnLine(mouse.tx, mouse.ty); // Spawn on move
-    });
-    
-    window.addEventListener('touchmove', function(e) {
-        if(e.touches.length > 0) {
-            mouse.tx = e.touches[0].clientX;
-            mouse.ty = e.touches[0].clientY;
-            if(Math.random() > 0.6) spawnLine(mouse.tx, mouse.ty);
-        }
-    });
+    function rand(a, b) { return a + Math.random() * (b - a); }
 
-    // Handle clicks to burst magic out
-    window.addEventListener('mousedown', function(e) {
-        for(let i=0; i<15; i++) spawnLine(e.clientX, e.clientY, true);
-    });
-
-    function spawnLine(x, y, isBurst = false) {
-        if (!isBurst && lines.length > 80) return; // Cap performance during normal movement
-        if (isBurst && lines.length > 150) return; // Cap performance during bursts
-        
-        let color = colors[Math.floor(Math.random() * colors.length)];
-        let angle = Math.random() * Math.PI * 2;
-        let speed = isBurst ? Math.random() * 8 + 4 : Math.random() * 4 + 1.5;
-        lines.push(new RibbonNode(x, y, Math.cos(angle)*speed, Math.sin(angle)*speed, color));
+    function Particle() {
+        this.reset();
     }
+    Particle.prototype.reset = function() {
+        this.x  = rand(0, W);
+        this.y  = rand(0, H);
+        this.vx = rand(-0.25, 0.25);
+        this.vy = rand(-0.35, -0.1);
+        this.r  = rand(1, 2.2);
+        this.alpha = rand(0.1, 0.35);
+        this.color = Math.random() > 0.5 ? '139,92,246' : '6,182,212';
+    };
+    Particle.prototype.update = function() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.y < -10 || this.x < -10 || this.x > W + 10) this.reset();
+    };
+    Particle.prototype.draw = function() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + this.color + ',' + this.alpha + ')';
+        ctx.fill();
+    };
 
-    class RibbonNode {
-        constructor(x, y, vx, vy, color) {
-            this.history = [{x: x, y: y}];
-            this.x = x;
-            this.y = y;
-            this.vx = vx;
-            this.vy = vy;
-            this.color = color;
-            this.life = 1;
-            this.decay = Math.random() * 0.012 + 0.005; // life duration
-            this.size = Math.random() * 2.5 + 1.2;
-        }
-        update() {
-            // Swirl / Curl effect relative to mouse
-            let dx = mouse.x - this.x;
-            let dy = mouse.y - this.y;
-            let dist = Math.sqrt(dx*dx + dy*dy);
-            
-            if (dist < 400 && dist > 1) {
-                // perpendicular vector for swirl
-                let px = -dy / dist;
-                let py = dx / dist;
-                let force = (400 - dist) * 0.0002;
-                this.vx += px * force * 4; // swirling force
-                this.vy += py * force * 4;
-                // pull/attraction
-                this.vx += (dx / dist) * force * 1.5;
-                this.vy += (dy / dist) * force * 1.5;
+    for (var i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
+
+    // Draw faint connection lines
+    function drawLines() {
+        var threshold = 140;
+        for (var a = 0; a < particles.length; a++) {
+            for (var b = a + 1; b < particles.length; b++) {
+                var dx = particles[a].x - particles[b].x;
+                var dy = particles[a].y - particles[b].y;
+                var dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < threshold) {
+                    ctx.beginPath();
+                    ctx.moveTo(particles[a].x, particles[a].y);
+                    ctx.lineTo(particles[b].x, particles[b].y);
+                    ctx.strokeStyle = 'rgba(139,92,246,' + (0.06 * (1 - dist / threshold)) + ')';
+                    ctx.lineWidth = 0.7;
+                    ctx.stroke();
+                }
             }
-            
-            this.x += this.vx;
-            this.y += this.vy;
-            
-            this.vx *= 0.95; // friction
-            this.vy *= 0.95;
-            
-            this.history.unshift({x: this.x, y: this.y});
-            if (this.history.length > 20) this.history.pop();
-            
-            this.life -= this.decay;
-        }
-        draw() {
-            if (this.history.length < 2) return;
-            
-            let alpha = Math.max(0, this.life);
-            ctx.beginPath();
-            ctx.moveTo(this.history[0].x, this.history[0].y);
-            for (let i = 1; i < this.history.length - 1; i++) {
-                let xc = (this.history[i].x + this.history[i + 1].x) / 2;
-                let yc = (this.history[i].y + this.history[i + 1].y) / 2;
-                ctx.quadraticCurveTo(this.history[i].x, this.history[i].y, xc, yc);
-            }
-            
-            ctx.strokeStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${alpha * 0.7})`;
-            ctx.lineWidth = this.size;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.stroke();
-            
-            // Glowing head (removed shadowBlur for massive performance boost, let globalCompositeOperation handle the glow)
-            ctx.beginPath();
-            ctx.arc(this.history[0].x, this.history[0].y, this.size * 1.5, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-            ctx.fill();
         }
     }
 
     function loop() {
-        mouse.x += (mouse.tx - mouse.x) * 0.08;
-        mouse.y += (mouse.ty - mouse.y) * 0.08;
-        
         ctx.clearRect(0, 0, W, H);
-        
-        // Draw the massive, soft cursor aura from cache
-        ctx.drawImage(auraCanvas, mouse.x - AURA_RAD, mouse.y - AURA_RAD);
-        
-        // Randomly spawn lines occasionally for ambiance
-        if (Math.random() > 0.92 && lines.length < 40) {
-            spawnLine(Math.random() * W, Math.random() * H);
+        drawLines();
+        for (var i = 0; i < particles.length; i++) {
+            particles[i].update();
+            particles[i].draw();
         }
-        
-        ctx.globalCompositeOperation = 'screen';
-        for (let i = lines.length - 1; i >= 0; i--) {
-            let l = lines[i];
-            l.update();
-            l.draw();
-            if (l.life <= 0) {
-                lines.splice(i, 1);
-            }
-        }
-        ctx.globalCompositeOperation = 'source-over';
-        
         requestAnimationFrame(loop);
     }
     loop();
@@ -2575,10 +2572,204 @@ document.addEventListener('keydown', function(e) {
         NodeList.prototype.forEach = Array.prototype.forEach;
     }
     btns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            var sess = sessionStorage.getItem('khanh_dev_session');
+            if (!sess) {
+                e.preventDefault();
+                if (typeof window.openAuthModal === 'function') {
+                    window.openAuthModal('login');
+                } else {
+                    alert('Please log in to download files.');
+                }
+                return;
+            }
             if (!btn.hasAttribute('download')) btn.setAttribute('download','');
         });
     });
+})();
+</script>
+
+<script>
+/* ============================================================
+   AUTH SYSTEM  (localStorage-based, client-side)
+============================================================ */
+(function() {
+    /* ------- helpers ------- */
+    var STORE_KEY = 'khanh_dev_users';
+    var SESSION_KEY = 'khanh_dev_session';
+
+    function getUsers() {
+        try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch(e) { return {}; }
+    }
+    function saveUsers(u) { localStorage.setItem(STORE_KEY, JSON.stringify(u)); }
+    function hashPw(s) {
+        // Simple deterministic hash (not cryptographic — for demo purposes)
+        var h = 0;
+        for (var i = 0; i < s.length; i++) { h = (Math.imul(31, h) + s.charCodeAt(i)) | 0; }
+        return 'h_' + Math.abs(h).toString(36);
+    }
+    function setSession(username) { sessionStorage.setItem(SESSION_KEY, username); }
+    function getSession() { return sessionStorage.getItem(SESSION_KEY); }
+    function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
+
+    /* ------- UI state ------- */
+    function showNavLoggedIn(username) {
+        var badge = document.getElementById('nav-user-badge');
+        var loginBtn = document.getElementById('nav-login-btn');
+        var initial = document.getElementById('nav-avatar-initial');
+        var nameEl = document.getElementById('nav-username-display');
+        if (!badge) return;
+        badge.classList.add('visible');
+        loginBtn.style.display = 'none';
+        initial.textContent = username.charAt(0).toUpperCase();
+        nameEl.textContent = username;
+    }
+    function showNavLoggedOut() {
+        var badge = document.getElementById('nav-user-badge');
+        var loginBtn = document.getElementById('nav-login-btn');
+        if (!badge) return;
+        badge.classList.remove('visible');
+        loginBtn.style.display = '';
+    }
+
+    /* ------- modal open/close ------- */
+    window.openAuthModal = function(tab) {
+        document.getElementById('auth-overlay').classList.add('open');
+        switchAuthTab(tab || 'login');
+        clearMessages();
+    };
+    window.closeAuthModal = function() {
+        document.getElementById('auth-overlay').classList.remove('open');
+    };
+    document.getElementById('auth-overlay').addEventListener('click', function(e) {
+        if (e.target === this) window.closeAuthModal();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') window.closeAuthModal();
+    });
+
+    /* ------- tabs ------- */
+    window.switchAuthTab = function(tab) {
+        var loginForm = document.getElementById('form-login');
+        var regForm = document.getElementById('form-register');
+        var tabLogin = document.getElementById('tab-login');
+        var tabReg = document.getElementById('tab-register');
+        var heading = document.getElementById('auth-heading');
+        var subhead = document.getElementById('auth-subhead');
+        clearMessages();
+        if (tab === 'login') {
+            loginForm.classList.remove('auth-form-hidden');
+            regForm.classList.add('auth-form-hidden');
+            tabLogin.classList.add('active');
+            tabReg.classList.remove('active');
+            heading.textContent = 'Welcome Back';
+            subhead.textContent = 'Sign in to your account to continue';
+        } else {
+            regForm.classList.remove('auth-form-hidden');
+            loginForm.classList.add('auth-form-hidden');
+            tabReg.classList.add('active');
+            tabLogin.classList.remove('active');
+            heading.textContent = 'Create Account';
+            subhead.textContent = 'Join khanh.dev in seconds';
+        }
+    };
+
+    function clearMessages() {
+        ['login-error','login-success','reg-error','reg-success'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) { el.textContent=''; el.className = el.className.replace(' visible',''); }
+        });
+    }
+    function showMsg(id, msg, type) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = msg;
+        el.className = (type === 'error' ? 'auth-error' : 'auth-success') + ' visible';
+    }
+
+    /* ------- register ------- */
+    window.handleRegister = function(e) {
+        e.preventDefault();
+        var username = document.getElementById('reg-username').value.trim();
+        var email = document.getElementById('reg-email').value.trim().toLowerCase();
+        var pw = document.getElementById('reg-password').value;
+        var confirm = document.getElementById('reg-confirm').value;
+        if (pw !== confirm) { showMsg('reg-error','Passwords do not match.','error'); return; }
+        var users = getUsers();
+        var key = username.toLowerCase();
+        if (users[key]) { showMsg('reg-error','Username "' + username + '" is already taken.','error'); return; }
+        // Check if email already used
+        for (var u in users) { if (users[u].email === email) { showMsg('reg-error','Email already registered.','error'); return; } }
+        users[key] = { username: username, email: email, pw: hashPw(pw), created: Date.now() };
+        saveUsers(users);
+        showMsg('reg-success', '🎉 Account created! Logging you in…', 'success');
+        setTimeout(function() {
+            setSession(username);
+            showNavLoggedIn(username);
+            window.closeAuthModal();
+        }, 1200);
+    };
+
+    /* ------- login ------- */
+    window.handleLogin = function(e) {
+        e.preventDefault();
+        var raw = document.getElementById('login-username').value.trim();
+        var pw = document.getElementById('login-password').value;
+        var users = getUsers();
+        var key = raw.toLowerCase();
+        var found = users[key];
+        // Also allow login by email
+        if (!found) {
+            for (var u in users) {
+                if (users[u].email === raw.toLowerCase()) { found = users[u]; key = u; break; }
+            }
+        }
+        if (!found || found.pw !== hashPw(pw)) {
+            showMsg('login-error', 'Incorrect username / password.', 'error');
+            return;
+        }
+        showMsg('login-success', '✓ Logged in! Welcome back, ' + found.username + '!', 'success');
+        setTimeout(function() {
+            setSession(found.username);
+            showNavLoggedIn(found.username);
+            window.closeAuthModal();
+        }, 900);
+    };
+
+    /* ------- logout ------- */
+    document.getElementById('nav-logout-btn').addEventListener('click', function() {
+        clearSession();
+        showNavLoggedOut();
+    });
+
+    /* ------- password strength ------- */
+    window.updateStrength = function(val) {
+        var bar = document.getElementById('strength-bar');
+        var label = document.getElementById('strength-label');
+        if (!bar) return;
+        var score = 0;
+        if (val.length >= 6) score++;
+        if (val.length >= 10) score++;
+        if (/[A-Z]/.test(val)) score++;
+        if (/[0-9]/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+        var pct = [0,20,40,65,85,100][score];
+        var colors = ['#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#8b5cf6'];
+        var labels = ['','Too weak','Weak','Fair','Strong','Very strong'];
+        bar.style.width = pct + '%';
+        bar.style.background = colors[score];
+        label.textContent = val.length === 0 ? 'Enter a password' : labels[score];
+        label.style.color = val.length === 0 ? '#64748b' : colors[score];
+    };
+
+    /* ------- restore session on page load ------- */
+    var sess = getSession();
+    if (sess) showNavLoggedIn(sess);
+
+    /* If no session, show modal automatically after a short delay */
+    if (!sess) {
+        setTimeout(function() { window.openAuthModal('login'); }, 1200);
+    }
 })();
 </script>
 </div>
