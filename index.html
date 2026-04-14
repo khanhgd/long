@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="futuristic-neon-glowing-rocket-icon-260nw-2676900473.webp" type="image/x-icon">
     <style>
         /* ============================================================
            DESIGN TOKENS
@@ -1207,8 +1208,237 @@
     </div>
 
     <!-- Logic Script -->
-    
-    <a href="#portfolio-nav" class="scroll-hint">
+    <script>
+    /* ============================================================
+       SOLAR SYSTEM & INTERACTIVE STARFIELD LOGIC
+    ============================================================ */
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Starfield with Parallax & Nebulas ---
+        const canvas = document.getElementById('starCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        
+        // Create offscreen canvas for nebula for high performance
+        const nebulaOuter = document.createElement('canvas');
+        const nCtx = nebulaOuter.getContext('2d', { alpha: true });
+        let nSize = 0;
+
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            
+            nSize = Math.max(width, height) * 1.5;
+            nebulaOuter.width = nSize;
+            nebulaOuter.height = nSize;
+            const gradient = nCtx.createRadialGradient(nSize/2, nSize/2, 0, nSize/2, nSize/2, nSize/2 * 0.8);
+            gradient.addColorStop(0, 'rgba(139, 92, 246, 0.07)');
+            gradient.addColorStop(0.5, 'rgba(6, 182, 212, 0.03)');
+            gradient.addColorStop(1, 'transparent');
+            nCtx.fillStyle = gradient;
+            nCtx.fillRect(0, 0, nSize, nSize);
+        }
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+
+        const stars = [];
+        for(let i=0; i<300; i++) {
+            stars.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 1.5 + 0.5,
+                alpha: Math.random(),
+                speed: Math.random() * 0.03 + 0.01,
+                parallax: Math.random() * 0.4 + 0.05
+            });
+        }
+
+        const shootingStars = [];
+        function createShootingStar() {
+            shootingStars.push({
+                x: Math.random() * width * 1.5,
+                y: Math.random() * -height * 0.5,
+                len: Math.random() * 80 + 30,
+                speed: Math.random() * 15 + 10,
+                angle: Math.PI / 4 + (Math.random() - 0.5) * 0.2,
+                life: 1
+            });
+            setTimeout(createShootingStar, Math.random() * 5000 + 3000);
+        }
+        setTimeout(createShootingStar, 2000);
+
+        let pointer = { x: width/2, y: height/2, tx: width/2, ty: height/2 };
+        document.addEventListener('mousemove', (e) => {
+            pointer.tx = e.clientX;
+            pointer.ty = e.clientY;
+        });
+
+        function drawStars() {
+            pointer.x += (pointer.tx - pointer.x) * 0.05;
+            pointer.y += (pointer.ty - pointer.y) * 0.05;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw subtle nebulas matching mouse pos (using cached high-perf offscreen canvas)
+            const nx = width/2 + (pointer.x - width/2)*0.15 - nSize/2;
+            const ny = height/2 + (pointer.y - height/2)*0.15 - nSize/2;
+            ctx.drawImage(nebulaOuter, nx, ny);
+
+            ctx.shadowBlur = 0;
+            stars.forEach(s => {
+                s.alpha += s.speed;
+                
+                const dx = (width/2 - pointer.x) * s.parallax;
+                const dy = (height/2 - pointer.y) * s.parallax;
+                
+                let renderX = s.x + dx;
+                let renderY = s.y + dy;
+
+                // Wraparound logic
+                if (renderX < 0) s.x += width;
+                if (renderX > width) s.x -= width;
+                if (renderY < 0) s.y += height;
+                if (renderY > height) s.y -= height;
+                
+                ctx.beginPath();
+                ctx.arc(renderX, renderY, s.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${(Math.sin(s.alpha) + 1) / 2 * 0.8 + 0.2})`;
+                ctx.fill();
+            });
+
+            // Draw shooting stars
+            shootingStars.forEach((s, idx) => {
+                s.x -= Math.cos(s.angle) * s.speed;
+                s.y += Math.sin(s.angle) * s.speed;
+                s.life -= 0.015;
+                if(s.life <= 0) {
+                    shootingStars.splice(idx, 1);
+                    return;
+                }
+                
+                ctx.beginPath();
+                ctx.moveTo(s.x, s.y);
+                ctx.lineTo(s.x + Math.cos(s.angle) * s.len, s.y - Math.sin(s.angle) * s.len);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${s.life * 0.8})`;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            });
+
+            requestAnimationFrame(drawStars);
+        }
+        drawStars();
+
+        // --- Planet Information Logic ---
+        const planetData = {
+            sun: { title: "Sun", type: "Yellow Dwarf Star", dist: "0 km", radius: "696,340 km", temp: "5,505 °C", desc: "The heart of our solar system, holding 99.8% of its mass.", color: "#ff8c00" },
+            mercury: { title: "Mercury", type: "Terrestrial Planet", dist: "57.9M km", radius: "2,439.7 km", temp: "167 °C", desc: "The smallest planet in our solar system and closest to the Sun—is only slightly larger than Earth's Moon.", color: "#a8a8a8" },
+            venus: { title: "Venus", type: "Terrestrial Planet", dist: "108.2M km", radius: "6,051.8 km", temp: "464 °C", desc: "Venus is the second planet from the Sun and is Earth's closest planetary neighbor. It's the hottest planet in our solar system.", color: "#d98d41" },
+            earth: { title: "Earth", type: "Terrestrial Planet", dist: "149.6M km", radius: "6,371 km", temp: "15 °C", desc: "Our home planet is the third planet from the Sun, and the only place we know of so far that's inhabited by living things.", color: "#5ca4ff" },
+            mars: { title: "Mars", type: "Terrestrial Planet", dist: "227.9M km", radius: "3,389.5 km", temp: "-65 °C", desc: "Mars is the fourth planet from the Sun – a dusty, cold, desert world with a very thin atmosphere.", color: "#ff7b54" },
+            jupiter: { title: "Jupiter", type: "Gas Giant", dist: "778.5M km", radius: "69,911 km", temp: "-110 °C", desc: "Jupiter has a long history of surprising scientists—all the way back to 1610 when Galileo Galilei found the first moons beyond Earth.", color: "#e0bd9b" },
+            saturn: { title: "Saturn", type: "Gas Giant", dist: "1.4B km", radius: "58,232 km", temp: "-140 °C", desc: "Saturn is the sixth planet from the Sun and the second-largest planet in our solar system. Adorned with a dazzling system of icy rings.", color: "#f4dcb1" },
+            uranus: { title: "Uranus", type: "Ice Giant", dist: "2.9B km", radius: "25,362 km", temp: "-195 °C", desc: "Uranus is the seventh planet from the Sun, and has the third-largest diameter in our solar system.", color: "#b8f0f0" },
+            neptune: { title: "Neptune", type: "Ice Giant", dist: "4.5B km", radius: "24,622 km", temp: "-200 °C", desc: "Dark, cold, and whipped by supersonic winds, ice giant Neptune is the eighth and most distant planet in our solar system.", color: "#526eff" }
+        };
+
+        const planets = document.querySelectorAll('.planet, .sun');
+        const infoPanel = document.getElementById('infoPanel');
+        const universe = document.getElementById('universe');
+        
+        const els = {
+            title: document.getElementById('infoTitle'),
+            type: document.getElementById('infoType'),
+            dist: document.getElementById('infoDistance'),
+            rad: document.getElementById('infoRadius'),
+            temp: document.getElementById('infoTemp'),
+            desc: document.getElementById('infoDesc'),
+            color: document.getElementById('infoColor')
+        };
+
+        let activePlanet = null;
+
+        planets.forEach(p => {
+            p.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = p.getAttribute('data-id');
+                const data = planetData[id];
+                if(!data) return;
+                
+                // Populate data
+                els.title.innerText = data.title;
+                els.type.innerText = data.type;
+                els.dist.innerText = data.dist;
+                els.rad.innerText = data.radius;
+                els.temp.innerText = data.temp;
+                els.desc.innerText = data.desc;
+                els.color.style.color = data.color;
+                
+                infoPanel.classList.add('active');
+                
+                // Zoom & Pan to planet
+                document.body.classList.add('paused');
+                activePlanet = p;
+                
+                // Reset transform to measure accurately
+                const prevTransition = universe.style.transition;
+                universe.style.transition = 'none';
+                universe.style.transform = 'translate(0px, 0px) scale(1)';
+                
+                // Force layout reflow
+                universe.offsetHeight; 
+                
+                const rect = p.getBoundingClientRect();
+                const uRect = universe.getBoundingClientRect();
+                
+                const pCenterX = rect.left + rect.width / 2;
+                const pCenterY = rect.top + rect.height / 2;
+                
+                const uCenterX = uRect.left + uRect.width / 2;
+                const uCenterY = uRect.top + uRect.height / 2;
+                
+                const offsetX = uCenterX - pCenterX;
+                const offsetY = uCenterY - pCenterY;
+                
+                // Restore transition and apply new transform
+                universe.style.transition = prevTransition || '';
+                // force layout
+                universe.offsetHeight;
+                universe.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(2.5)`;
+            });
+        });
+
+        // Click wrapper to reset viewing
+        document.getElementById('solar-hero').addEventListener('click', () => {
+            if(activePlanet) {
+                infoPanel.classList.remove('active');
+                document.body.classList.remove('paused');
+                universe.style.transform = `translate(0px, 0px) scale(1)`;
+                activePlanet = null;
+            }
+        });
+        
+        // Control Buttons
+        const btnPause = document.getElementById('togglePause');
+        if(btnPause) {
+            btnPause.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('paused');
+                btnPause.innerText = document.body.classList.contains('paused') ? 'Play Animation' : 'Pause Animation';
+            });
+        }
+
+        const btnLabels = document.getElementById('toggleLabels');
+        if(btnLabels) {
+            btnLabels.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('show-labels');
+                btnLabels.innerText = document.body.classList.contains('show-labels') ? 'Hide Labels' : 'Show Labels';
+            });
+        }
+    });
+    </script>    <a href="#portfolio-nav" class="scroll-hint">
         Explore Portfolio
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
     </a>
@@ -2103,13 +2333,35 @@
 
 <script>
 /* ============================================================
-   PARTICLE BACKGROUND
+   MAGICAL AURA & FLUID RIBBON BACKGROUND
 ============================================================ */
 (function() {
     var canvas = document.getElementById('bg-canvas');
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
-    var W, H, particles = [], PARTICLE_COUNT = 70;
+    var W, H;
+    var lines = [];
+    var mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2, tx: window.innerWidth / 2, ty: window.innerHeight / 2 };
+    
+    var colors = [
+        [139, 92, 246], // Violet
+        [6, 182, 212],  // Cyan
+        [245, 158, 11], // Amber
+        [236, 72, 153]  // Pink
+    ];
+    
+    // High performance cached cursor aura
+    var auraCanvas = document.createElement('canvas');
+    var actx = auraCanvas.getContext('2d', { alpha: true });
+    var AURA_RAD = 550;
+    auraCanvas.width = AURA_RAD * 2;
+    auraCanvas.height = AURA_RAD * 2;
+    var grad = actx.createRadialGradient(AURA_RAD, AURA_RAD, 0, AURA_RAD, AURA_RAD, AURA_RAD);
+    grad.addColorStop(0, 'rgba(139, 92, 246, 0.16)');
+    grad.addColorStop(0.3, 'rgba(6, 182, 212, 0.05)');
+    grad.addColorStop(1, 'transparent');
+    actx.fillStyle = grad;
+    actx.fillRect(0, 0, AURA_RAD * 2, AURA_RAD * 2);
 
     function resize() {
         W = canvas.width  = window.innerWidth;
@@ -2118,61 +2370,127 @@
     window.addEventListener('resize', resize);
     resize();
 
-    function rand(a, b) { return a + Math.random() * (b - a); }
+    window.addEventListener('mousemove', function(e) {
+        mouse.tx = e.clientX;
+        mouse.ty = e.clientY;
+        if(Math.random() > 0.6) spawnLine(mouse.tx, mouse.ty); // Spawn on move
+    });
+    
+    window.addEventListener('touchmove', function(e) {
+        if(e.touches.length > 0) {
+            mouse.tx = e.touches[0].clientX;
+            mouse.ty = e.touches[0].clientY;
+            if(Math.random() > 0.6) spawnLine(mouse.tx, mouse.ty);
+        }
+    });
 
-    function Particle() {
-        this.reset();
+    // Handle clicks to burst magic out
+    window.addEventListener('mousedown', function(e) {
+        for(let i=0; i<15; i++) spawnLine(e.clientX, e.clientY, true);
+    });
+
+    function spawnLine(x, y, isBurst = false) {
+        if (!isBurst && lines.length > 80) return; // Cap performance during normal movement
+        if (isBurst && lines.length > 150) return; // Cap performance during bursts
+        
+        let color = colors[Math.floor(Math.random() * colors.length)];
+        let angle = Math.random() * Math.PI * 2;
+        let speed = isBurst ? Math.random() * 8 + 4 : Math.random() * 4 + 1.5;
+        lines.push(new RibbonNode(x, y, Math.cos(angle)*speed, Math.sin(angle)*speed, color));
     }
-    Particle.prototype.reset = function() {
-        this.x  = rand(0, W);
-        this.y  = rand(0, H);
-        this.vx = rand(-0.25, 0.25);
-        this.vy = rand(-0.35, -0.1);
-        this.r  = rand(1, 2.2);
-        this.alpha = rand(0.1, 0.35);
-        this.color = Math.random() > 0.5 ? '139,92,246' : '6,182,212';
-    };
-    Particle.prototype.update = function() {
-        this.x += this.vx;
-        this.y += this.vy;
-        if (this.y < -10 || this.x < -10 || this.x > W + 10) this.reset();
-    };
-    Particle.prototype.draw = function() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(' + this.color + ',' + this.alpha + ')';
-        ctx.fill();
-    };
 
-    for (var i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
-
-    // Draw faint connection lines
-    function drawLines() {
-        var threshold = 140;
-        for (var a = 0; a < particles.length; a++) {
-            for (var b = a + 1; b < particles.length; b++) {
-                var dx = particles[a].x - particles[b].x;
-                var dy = particles[a].y - particles[b].y;
-                var dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < threshold) {
-                    ctx.beginPath();
-                    ctx.moveTo(particles[a].x, particles[a].y);
-                    ctx.lineTo(particles[b].x, particles[b].y);
-                    ctx.strokeStyle = 'rgba(139,92,246,' + (0.06 * (1 - dist / threshold)) + ')';
-                    ctx.lineWidth = 0.7;
-                    ctx.stroke();
-                }
+    class RibbonNode {
+        constructor(x, y, vx, vy, color) {
+            this.history = [{x: x, y: y}];
+            this.x = x;
+            this.y = y;
+            this.vx = vx;
+            this.vy = vy;
+            this.color = color;
+            this.life = 1;
+            this.decay = Math.random() * 0.012 + 0.005; // life duration
+            this.size = Math.random() * 2.5 + 1.2;
+        }
+        update() {
+            // Swirl / Curl effect relative to mouse
+            let dx = mouse.x - this.x;
+            let dy = mouse.y - this.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if (dist < 400 && dist > 1) {
+                // perpendicular vector for swirl
+                let px = -dy / dist;
+                let py = dx / dist;
+                let force = (400 - dist) * 0.0002;
+                this.vx += px * force * 4; // swirling force
+                this.vy += py * force * 4;
+                // pull/attraction
+                this.vx += (dx / dist) * force * 1.5;
+                this.vy += (dy / dist) * force * 1.5;
             }
+            
+            this.x += this.vx;
+            this.y += this.vy;
+            
+            this.vx *= 0.95; // friction
+            this.vy *= 0.95;
+            
+            this.history.unshift({x: this.x, y: this.y});
+            if (this.history.length > 20) this.history.pop();
+            
+            this.life -= this.decay;
+        }
+        draw() {
+            if (this.history.length < 2) return;
+            
+            let alpha = Math.max(0, this.life);
+            ctx.beginPath();
+            ctx.moveTo(this.history[0].x, this.history[0].y);
+            for (let i = 1; i < this.history.length - 1; i++) {
+                let xc = (this.history[i].x + this.history[i + 1].x) / 2;
+                let yc = (this.history[i].y + this.history[i + 1].y) / 2;
+                ctx.quadraticCurveTo(this.history[i].x, this.history[i].y, xc, yc);
+            }
+            
+            ctx.strokeStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${alpha * 0.7})`;
+            ctx.lineWidth = this.size;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+            
+            // Glowing head (removed shadowBlur for massive performance boost, let globalCompositeOperation handle the glow)
+            ctx.beginPath();
+            ctx.arc(this.history[0].x, this.history[0].y, this.size * 1.5, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+            ctx.fill();
         }
     }
 
     function loop() {
+        mouse.x += (mouse.tx - mouse.x) * 0.08;
+        mouse.y += (mouse.ty - mouse.y) * 0.08;
+        
         ctx.clearRect(0, 0, W, H);
-        drawLines();
-        for (var i = 0; i < particles.length; i++) {
-            particles[i].update();
-            particles[i].draw();
+        
+        // Draw the massive, soft cursor aura from cache
+        ctx.drawImage(auraCanvas, mouse.x - AURA_RAD, mouse.y - AURA_RAD);
+        
+        // Randomly spawn lines occasionally for ambiance
+        if (Math.random() > 0.92 && lines.length < 40) {
+            spawnLine(Math.random() * W, Math.random() * H);
         }
+        
+        ctx.globalCompositeOperation = 'screen';
+        for (let i = lines.length - 1; i >= 0; i--) {
+            let l = lines[i];
+            l.update();
+            l.draw();
+            if (l.life <= 0) {
+                lines.splice(i, 1);
+            }
+        }
+        ctx.globalCompositeOperation = 'source-over';
+        
         requestAnimationFrame(loop);
     }
     loop();
