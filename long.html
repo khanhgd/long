@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherVerse — 3D Weather Experience</title>
+    <meta name="description" content="A stunning 3D weather interface with real-time data, immersive animations, and glassmorphism design.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-clear-day">
+
+    <!-- Animated Background Canvas -->
+    <canvas id="weatherCanvas"></canvas>
+
+    <!-- Parallax Background Layers -->
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-noise"></div>
+
+    <!-- Main App -->
+    <div class="app-container" id="appContainer">
+
+        <!-- ─── HEADER ─── -->
+        <header class="header" id="header">
+            <div class="logo">
+                <div class="logo-orb">
+                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="20" cy="20" r="18" stroke="white" stroke-width="1.5" opacity="0.6"/>
+                        <circle cx="20" cy="20" r="10" fill="white" opacity="0.15"/>
+                        <path d="M20 8 Q26 14 26 20 Q26 26 20 32 Q14 26 14 20 Q14 14 20 8Z" fill="white" opacity="0.5"/>
+                        <path d="M8 20 Q14 14 20 14 Q26 14 32 20 Q26 26 20 26 Q14 26 8 20Z" fill="white" opacity="0.3"/>
+                    </svg>
+                </div>
+                <div class="logo-text-wrap">
+                    <span class="logo-title">WeatherVerse</span>
+                    <span class="logo-sub">3D Weather Experience</span>
+                </div>
+            </div>
+
+            <div class="search-wrapper">
+                <div class="search-bar" id="searchBar">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Search any city..." autocomplete="off" spellcheck="false">
+                    <button class="search-btn" id="searchBtn" title="Search">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+                <div class="search-suggestions" id="searchSuggestions"></div>
+            </div>
+
+            <div class="header-actions">
+                <button class="hdr-btn" id="locationBtn" title="Use my location">
+                    <i class="fas fa-location-crosshairs"></i>
+                </button>
+                <button class="hdr-btn unit-toggle" id="unitToggle" title="Toggle °C / °F">
+                    <span id="unitLabel">°C</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ─── LOADING ─── -->
+        <div class="loading-screen" id="loadingScreen">
+            <div class="loader-scene">
+                <div class="loader-cube">
+                    <div class="cube-face face-front"></div>
+                    <div class="cube-face face-back"></div>
+                    <div class="cube-face face-left"></div>
+                    <div class="cube-face face-right"></div>
+                    <div class="cube-face face-top"></div>
+                    <div class="cube-face face-bottom"></div>
+                </div>
+            </div>
+            <p class="loading-text">Fetching weather data<span class="loading-dots"></span></p>
+        </div>
+
+        <!-- ─── ERROR ─── -->
+        <div class="error-screen hidden" id="errorScreen">
+            <div class="error-icon-wrap">
+                <i class="fas fa-cloud-slash"></i>
+            </div>
+            <h2 class="error-title">City Not Found</h2>
+            <p class="error-sub">We couldn't find weather data for that location.<br>Please check the spelling and try again.</p>
+            <button class="glass-btn retry-btn" id="retryBtn">
+                <i class="fas fa-rotate-right"></i> Try Again
+            </button>
+        </div>
+
+        <!-- ─── WEATHER CONTENT ─── -->
+        <div class="weather-content hidden" id="weatherContent">
+
+            <!-- LEFT PANEL -->
+            <div class="left-panel">
+
+                <!-- Main Hero Card -->
+                <div class="hero-card-scene" id="heroCardScene">
+                    <div class="hero-card glass-card tilt-card" id="heroCard">
+                        <div class="card-shimmer"></div>
+                        <div class="card-glow" id="cardGlow"></div>
+
+                        <!-- Location + Date -->
+                        <div class="hero-top">
+                            <div class="location-row">
+                                <i class="fas fa-location-dot"></i>
+                                <h1 class="city-name" id="cityName">---</h1>
+                                <span class="country-badge" id="countryCode"></span>
+                            </div>
+                            <div class="datetime-row">
+                                <span id="currentDate"></span>
+                                <span class="dot-sep">•</span>
+                                <span id="currentTime" class="live-time"></span>
+                            </div>
+                        </div>
+
+                        <!-- Temperature + Icon -->
+                        <div class="hero-center">
+                            <div class="weather-icon-wrap" id="weatherIconWrap">
+                                <!-- SVG injected by JS -->
+                            </div>
+                            <div class="temp-block">
+                                <span class="temp-giant" id="tempValue">--</span>
+                                <div class="temp-meta">
+                                    <span class="temp-unit-symbol" id="tempUnit">°C</span>
+                                    <div class="temp-hi-lo">
+                                        <span class="hi">↑<span id="tempMax">--</span>°</span>
+                                        <span class="lo">↓<span id="tempMin">--</span>°</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Condition + Feels -->
+                        <div class="hero-bottom">
+                            <div class="condition-pill" id="conditionText">Loading...</div>
+                            <div class="feels-row">
+                                <span class="feels-label">Feels like</span>
+                                <span class="feels-val" id="feelsLike">--°</span>
+                                <span class="dot-sep">•</span>
+                                <span class="feels-label">Precip</span>
+                                <span class="feels-val" id="precipChance">--%</span>
+                            </div>
+                        </div>
+
+                        <!-- 3D Depth Layer -->
+                        <div class="card-depth-layer"></div>
+                    </div>
+                </div>
+
+                <!-- Hourly Forecast -->
+                <div class="hourly-card glass-card slide-up" id="hourlyCard">
+                    <div class="card-header">
+                        <i class="fas fa-clock-rotate-left"></i>
+                        <span>Hourly Forecast</span>
+                    </div>
+                    <div class="hourly-track" id="hourlyTrack">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT PANEL -->
+            <div class="right-panel">
+
+                <!-- 3-Day Forecast -->
+                <div class="forecast-card glass-card slide-up" id="forecastCard">
+                    <div class="card-header">
+                        <i class="fas fa-calendar-days"></i>
+                        <span>3-Day Forecast</span>
+                    </div>
+                    <div class="forecast-list" id="forecastList">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Details Grid -->
+                <div class="details-grid">
+
+                    <!-- Wind -->
+                    <div class="detail-card glass-card slide-up" id="windCard">
+                        <div class="detail-header">
+                            <div class="detail-icon-wrap wind-clr">
+                                <i class="fas fa-wind"></i>
+                            </div>
+                            <span class="detail-label">Wind</span>
+                        </div>
+                        <div class="detail-body">
+                            <span class="detail-big" id="windSpeed">--</span>
+                            <span class="detail-unit-sm">km/h</span>
+                        </div>
+                        <div class="compass-wrap">
+                            <div class="compass-ring">
+                                <span class="compass-n">N</span>
+                                <span class="compass-s">S</span>
+                                <span class="compass-e">E</span>
+                                <span class="compass-w">W</span>
+                                <div class="compass-needle" id="compassNeedle"></div>
+                            </div>
+                            <span class="wind-dir-text" id="windDir">---</span>
+                        </div>
+                    </div>
+
+                    <!-- Humidity -->
+                    <div class="detail-card glass-card slide-up" id="humidityCard">
+                        <div class="detail-header">
+                            <div class="detail-icon-wrap humidity-clr">
+                                <i class="fas fa-droplet"></i>
+                            </div>
+                            <span class="detail-label">Humidity</span>
+                        </div>
+                        <div class="detail-body">
+                            <span class="detail-big" id="humidity">--</span>
+                            <span class="detail-unit-sm">%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill humidity-bar-fill" id="humidityFill"></div>
+                        </div>
+                        <span class="bar-hint" id="humidityHint"></span>
+                    </div>
+
+                    <!-- Visibility -->
+                    <div class="detail-card glass-card slide-up" id="visibilityCard">
+                        <div class="detail-header">
+                            <div class="detail-icon-wrap visibility-clr">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <span class="detail-label">Visibility</span>
+                        </div>
+                        <div class="detail-body">
+                            <span class="detail-big" id="visibility">--</span>
+                            <span class="detail-unit-sm">km</span>
+                        </div>
+                        <div class="vis-dots" id="visDots"></div>
+                    </div>
+
+                    <!-- Pressure -->
+                    <div class="detail-card glass-card slide-up" id="pressureCard">
+                        <div class="detail-header">
+                            <div class="detail-icon-wrap pressure-clr">
+                                <i class="fas fa-gauge-high"></i>
+                            </div>
+                            <span class="detail-label">Pressure</span>
+                        </div>
+                        <div class="detail-body">
+                            <span class="detail-big" id="pressure">--</span>
+                            <span class="detail-unit-sm">hPa</span>
+                        </div>
+                    </div>
+
+                    <!-- UV Index -->
+                    <div class="detail-card glass-card slide-up" id="uvCard">
+                        <div class="detail-header">
+                            <div class="detail-icon-wrap uv-clr">
+                                <i class="fas fa-sun"></i>
+                            </div>
+                            <span class="detail-label">UV Index</span>
+                        </div>
+                        <div class="detail-body">
+                            <span class="detail-big" id="uvIndex">--</span>
+                            <span class="detail-unit-sm" id="uvLevel">Low</span>
+                        </div>
+                        <div class="uv-spectrum">
+                            <div class="uv-pointer" id="uvPointer"></div>
+                        </div>
+                    </div>
+
+                    <!-- Sun Times -->
+                    <div class="detail-card glass-card slide-up" id="sunCard">
+                        <div class="detail-header">
+                            <div class="detail-icon-wrap sun-clr">
+                                <i class="fas fa-circle-half-stroke"></i>
+                            </div>
+                            <span class="detail-label">Sun Times</span>
+                        </div>
+                        <div class="sun-row">
+                            <div class="sun-item">
+                                <i class="fas fa-arrow-up sun-up"></i>
+                                <span class="sun-label">Sunrise</span>
+                                <span class="sun-time" id="sunrise">--:--</span>
+                            </div>
+                            <div class="sun-divider"></div>
+                            <div class="sun-item">
+                                <i class="fas fa-arrow-down sun-down"></i>
+                                <span class="sun-label">Sunset</span>
+                                <span class="sun-time" id="sunset">--:--</span>
+                            </div>
+                        </div>
+                        <div class="sun-arc-wrap">
+                            <svg class="sun-arc-svg" viewBox="0 0 120 60" fill="none">
+                                <path d="M10 55 Q60 5 110 55" stroke="rgba(255,255,255,0.15)" stroke-width="2" fill="none"/>
+                                <path class="sun-arc-progress" id="sunArcPath" d="M10 55 Q60 5 110 55" stroke="url(#sunGrad)" stroke-width="2.5" fill="none" stroke-dasharray="130" stroke-dashoffset="130"/>
+                                <defs>
+                                    <linearGradient id="sunGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#f97316"/>
+                                        <stop offset="100%" stop-color="#fbbf24"/>
+                                    </linearGradient>
+                                </defs>
+                                <circle class="sun-dot" id="sunDot" cx="10" cy="55" r="4" fill="#fbbf24"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+        <!-- end weather-content -->
+
+    </div>
+    <!-- end app-container -->
+
+    <script src="style.js"></script>
+</body>
+</html>
