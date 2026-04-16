@@ -2891,5 +2891,248 @@ document.addEventListener('keydown', function(e) {
     });
 })();
 </script>
+<!-- ======= SCHEDULE DOWNLOADS WIDGET ======= -->
+<style>
+/* Schedule Widget Styles */
+.schedule-btn-wrap {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center;
+}
+.schedule-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    color: #c4b5fd;
+    font-weight: 600;
+    font-size: 0.82rem;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+.schedule-btn:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
+    color: #fff;
+}
+#scheduler-panel {
+    position: fixed;
+    right: -400px;
+    top: 0;
+    width: 350px;
+    max-width: 100vw;
+    height: 100vh;
+    background: rgba(12, 12, 28, 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-left: 1px solid rgba(255,255,255,0.08);
+    z-index: 9999;
+    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.5);
+    font-family: 'Inter', system-ui, sans-serif;
+}
+#scheduler-panel.open { right: 0; }
+.scheduler-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.scheduler-title { font-size: 1.1rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
+.scheduler-close { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; transition: color 0.2s; padding: 0;}
+.scheduler-close:hover { color: #f43f5e; }
+.scheduler-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.scheduler-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 16px;
+    animation: fadeIn 0.3s ease;
+    transition: border-color 0.3s;
+}
+.scheduler-item.completed { border-color: rgba(34, 197, 94, 0.4); background: rgba(34, 197, 94, 0.05); }
+.item-filename { font-size: 0.9rem; font-weight: 600; color: #f1f5f9; margin-bottom: 6px; word-break: break-all; }
+.item-status { font-size: 0.8rem; color: #c4b5fd; display: flex; align-items: center; gap: 6px; }
+.item-status.completed-status { color: #86efac; }
+.scheduler-footer { margin-top: 20px; font-size: 0.8rem; color: #64748b; text-align: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; line-height: 1.5; }
+.floating-scheduler-btn {
+    position: fixed; bottom: 30px; right: 30px; z-index: 100;
+    background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+    color: white; width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(139,92,246,0.4); cursor: pointer;
+    border: none; transition: transform 0.3s, box-shadow 0.3s;
+}
+.floating-scheduler-btn:hover { transform: scale(1.08) translateY(-3px); box-shadow: 0 8px 25px rgba(139,92,246,0.6); }
+.scheduler-badge {
+    position: absolute; top: -4px; right: -4px; background: #f43f5e; color: white;
+    font-size: 0.7rem; font-weight: bold; width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid #0f0c29;
+}
+.scheduler-badge.visible { opacity: 1; }
+</style>
+
+<div id="scheduler-panel">
+    <div class="scheduler-header">
+        <div class="scheduler-title">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            Download Queue
+        </div>
+        <button class="scheduler-close" onclick="toggleScheduler()">✕</button>
+    </div>
+    <div class="scheduler-list" id="scheduler-list">
+        <div style="color:#64748b; text-align:center; margin-top:40px; font-size:0.85rem;" id="scheduler-empty">No scheduled tasks.</div>
+    </div>
+    <div class="scheduler-footer">
+        Automatically clearing tasks every 30 minutes<br><span id="cleanup-timer" style="color:#94a3b8; font-family:'JetBrains Mono', monospace; margin-top:6px; display:inline-block;"></span>
+    </div>
+</div>
+
+<button class="floating-scheduler-btn" onclick="toggleScheduler()" title="View Scheduled Downloads">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+    <div class="scheduler-badge" id="scheduler-badge">0</div>
+</button>
+
+<script>
+(function(){
+    var dBtns = document.querySelectorAll('.download-btn');
+    var tasks = []; 
+    var listEl = document.getElementById('scheduler-list');
+    var emptyEl = document.getElementById('scheduler-empty');
+    var badgeEl = document.getElementById('scheduler-badge');
+    var cleanupEl = document.getElementById('cleanup-timer');
+
+    var cleanupInterval = 30 * 60 * 1000; // 30 minutes
+    var nextCleanup = Date.now() + cleanupInterval;
+
+    setInterval(function() {
+        var now = Date.now();
+        var msLeft = nextCleanup - now;
+        if (msLeft <= 0) {
+            tasks.forEach(function(t) { clearTimeout(t.timerId); });
+            tasks = [];
+            renderTasks();
+            nextCleanup = Date.now() + cleanupInterval;
+            showNotification('History auto-cleaned! Tasks deleted per 30-min schedule.');
+        } else {
+            var mins = Math.floor(msLeft / 60000);
+            var secs = Math.floor((msLeft % 60000) / 1000);
+            cleanupEl.textContent = 'Next cleanup: ' + String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
+        }
+    }, 1000);
+
+    function showNotification(msg) {
+        var n = document.createElement('div');
+        n.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(244,63,94,0.9);color:white;padding:12px 24px;border-radius:10px;z-index:10000;font-weight:600;font-size:0.9rem;box-shadow:0 10px 30px rgba(0,0,0,0.5);backdrop-filter:blur(8px);animation:fadeIn 0.4s ease;';
+        n.textContent = msg;
+        document.body.appendChild(n);
+        setTimeout(function(){ n.style.opacity='0'; setTimeout(function(){ n.remove(); }, 300); }, 5000);
+    }
+
+    window.toggleScheduler = function() {
+        document.getElementById('scheduler-panel').classList.toggle('open');
+    };
+
+    function triggerDownload(url, filename) {
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename || '';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    function renderTasks() {
+        listEl.innerHTML = '';
+        if(tasks.length === 0) {
+            listEl.appendChild(emptyEl);
+            badgeEl.classList.remove('visible');
+        } else {
+            badgeEl.classList.add('visible');
+            var pendingCount = tasks.filter(function(t){ return t.status === 'pending'; }).length;
+            badgeEl.textContent = pendingCount;
+            
+            tasks.forEach(function(t) {
+                var d = document.createElement('div');
+                d.className = 'scheduler-item ' + (t.status === 'completed' ? 'completed' : '');
+                d.innerHTML = `
+                    <div class="item-filename">${t.filename}</div>
+                    <div class="item-status ${t.status === 'completed' ? 'completed-status' : ''}">
+                        ${t.status === 'completed' ? '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg> Downloaded' : '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Downloading in <span id="time-'+t.id+'" style="font-family:\\'JetBrains Mono\\', monospace;">'+t.timeRemaining+'</span>s'}
+                    </div>
+                `;
+                listEl.appendChild(d);
+            });
+        }
+    }
+
+    function startTaskTimer(task) {
+        task.timerId = setInterval(function() {
+            task.timeRemaining--;
+            var timeEl = document.getElementById('time-'+task.id);
+            if(timeEl) timeEl.textContent = task.timeRemaining;
+            
+            if(task.timeRemaining <= 0) {
+                clearInterval(task.timerId);
+                task.status = 'completed';
+                triggerDownload(task.url, task.filename);
+                renderTasks();
+            }
+        }, 1000);
+    }
+
+    dBtns.forEach(function(btn) {
+        var wrapper = document.createElement('div');
+        wrapper.className = 'schedule-btn-wrap';
+        btn.parentNode.insertBefore(wrapper, btn);
+        wrapper.appendChild(btn);
+
+        var schedBtn = document.createElement('button');
+        schedBtn.className = 'schedule-btn';
+        schedBtn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Schedule';
+        
+        schedBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var sess = sessionStorage.getItem('khanh_dev_session');
+            if(!sess) {
+                if(typeof openAuthModal === 'function') {
+                    openAuthModal('login');
+                } else {
+                    alert('Please log in to schedule tasks.');
+                }
+                return;
+            }
+            var secsInput = prompt("Enter seconds to delay the download:", "10");
+            if (!secsInput) return;
+            var delay = parseInt(secsInput, 10);
+            if(isNaN(delay) || delay <= 0) return;
+
+            var filename = btn.getAttribute('download') || 'file';
+            var url = btn.getAttribute('href') || '#';
+
+            var newTask = {
+                id: Date.now(),
+                filename: filename,
+                url: url,
+                timeRemaining: delay,
+                status: 'pending',
+                timerId: null
+            };
+            tasks.push(newTask);
+            startTaskTimer(newTask);
+            renderTasks();
+
+            document.getElementById('scheduler-panel').classList.add('open');
+        });
+
+        wrapper.appendChild(schedBtn);
+        btn.style.margin = '0';
+        btn.style.alignSelf = 'center';
+    });
+})();
+</script>
 </body>
 </html>
