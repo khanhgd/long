@@ -2975,19 +2975,60 @@ document.addEventListener('keydown', function(e) {
 .scheduler-badge.visible { opacity: 1; }
 </style>
 
+<style>
+.scheduler-tabs {
+    display: flex; gap: 4px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; padding: 4px; margin-bottom: 16px;
+}
+.sched-tab {
+    flex: 1; padding: 8px 0; background: transparent; border: none; color: #94a3b8; font-size: 0.85rem;
+    font-weight: 600; cursor: pointer; border-radius: 6px; transition: all 0.2s; font-family: inherit;
+}
+.sched-tab.active {
+    background: rgba(139, 92, 246, 0.2); color: #fff; box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
+}
+#clear-history-btn {
+    background: transparent; border: 1px solid rgba(244, 63, 94, 0.4); color: #fda4af; padding: 6px 12px;
+    border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; font-family: inherit;
+}
+#clear-history-btn:hover { background: rgba(244, 63, 94, 0.15); border-color: #f43f5e; color: #fff; }
+.history-item {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 12px;
+    display: flex; flex-direction: column; gap: 4px; border-left: 3px solid #06b6d4;
+}
+.history-name { font-size: 0.85rem; font-weight: 600; color: #f1f5f9; word-break: break-all; }
+.history-time { font-size: 0.75rem; color: #64748b; font-family: 'JetBrains Mono', monospace; }
+</style>
+
 <div id="scheduler-panel">
     <div class="scheduler-header">
         <div class="scheduler-title">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            Download Queue
+            Download Manager
         </div>
         <button class="scheduler-close" onclick="toggleScheduler()">✕</button>
     </div>
+
+    <!-- Tab Controls -->
+    <div class="scheduler-tabs">
+        <button class="sched-tab active" id="tab-btn-queue" onclick="switchSchedTab('queue')">Queue</button>
+        <button class="sched-tab" id="tab-btn-history" onclick="switchSchedTab('history')">History</button>
+    </div>
+
     <div class="scheduler-list" id="scheduler-list">
         <div style="color:#64748b; text-align:center; margin-top:40px; font-size:0.85rem;" id="scheduler-empty">No scheduled tasks.</div>
     </div>
-    <div class="scheduler-footer">
+
+    <div class="scheduler-list" id="history-list" style="display: none;">
+        <!-- history items go here -->
+    </div>
+
+    <div class="scheduler-footer" id="scheduler-footer-queue">
         Automatically clearing tasks every 30 minutes<br><span id="cleanup-timer" style="color:#94a3b8; font-family:'JetBrains Mono', monospace; margin-top:6px; display:inline-block;"></span>
+    </div>
+
+    <div class="scheduler-footer" id="scheduler-footer-history" style="display: none;">
+        <button id="clear-history-btn">Clear History</button>
     </div>
 </div>
 
@@ -3001,6 +3042,7 @@ document.addEventListener('keydown', function(e) {
     var dBtns = document.querySelectorAll('.download-btn');
     var tasks = []; 
     var listEl = document.getElementById('scheduler-list');
+    var histEl = document.getElementById('history-list');
     var emptyEl = document.getElementById('scheduler-empty');
     var badgeEl = document.getElementById('scheduler-badge');
     var cleanupEl = document.getElementById('cleanup-timer');
@@ -3032,9 +3074,70 @@ document.addEventListener('keydown', function(e) {
         setTimeout(function(){ n.style.opacity='0'; setTimeout(function(){ n.remove(); }, 300); }, 5000);
     }
 
+    // Tab Logic
+    window.switchSchedTab = function(tab) {
+        var qList = document.getElementById('scheduler-list');
+        var hList = document.getElementById('history-list');
+        var qFoot = document.getElementById('scheduler-footer-queue');
+        var hFoot = document.getElementById('scheduler-footer-history');
+        var tabQ = document.getElementById('tab-btn-queue');
+        var tabH = document.getElementById('tab-btn-history');
+        
+        tabQ.classList.remove('active');
+        tabH.classList.remove('active');
+        
+        if (tab === 'queue') {
+            tabQ.classList.add('active');
+            qList.style.display = 'flex'; hList.style.display = 'none';
+            qFoot.style.display = 'block'; hFoot.style.display = 'none';
+        } else {
+            tabH.classList.add('active');
+            qList.style.display = 'none'; hList.style.display = 'flex';
+            qFoot.style.display = 'none'; hFoot.style.display = 'block';
+            renderHistory();
+        }
+    };
+
     window.toggleScheduler = function() {
         document.getElementById('scheduler-panel').classList.toggle('open');
     };
+
+    // History Logic
+    function loadHistory() {
+        try { return JSON.parse(localStorage.getItem('khanh_dev_dl_history')) || []; }
+        catch(e) { return []; }
+    }
+    function saveHistory(h) {
+        localStorage.setItem('khanh_dev_dl_history', JSON.stringify(h));
+    }
+    function addToHistory(filename) {
+        var h = loadHistory();
+        h.unshift({ filename: filename, timestamp: Date.now() });
+        if(h.length > 50) h.pop(); // keep last 50 only
+        saveHistory(h);
+        renderHistory();
+    }
+    document.getElementById('clear-history-btn').addEventListener('click', function() {
+        saveHistory([]);
+        renderHistory();
+        showNotification('Download history cleared.');
+    });
+
+    function renderHistory() {
+        var h = loadHistory();
+        histEl.innerHTML = '';
+        if(h.length === 0) {
+            histEl.innerHTML = '<div style="color:#64748b; text-align:center; margin-top:40px; font-size:0.85rem;">No download history.</div>';
+            return;
+        }
+        h.forEach(function(item) {
+            var d = new Date(item.timestamp);
+            var div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = '<div class="history-name">' + item.filename + '</div><div class="history-time">' + d.toLocaleString() + '</div>';
+            histEl.appendChild(div);
+        });
+    }
 
     function triggerDownload(url, filename) {
         var a = document.createElement('a');
@@ -3079,12 +3182,22 @@ document.addEventListener('keydown', function(e) {
                 clearInterval(task.timerId);
                 task.status = 'completed';
                 triggerDownload(task.url, task.filename);
+                addToHistory(task.filename); // Record history on scheduler completion
                 renderTasks();
             }
         }, 1000);
     }
 
     dBtns.forEach(function(btn) {
+        // Hook into original click to log history (only if session exists per original logic)
+        btn.addEventListener('click', function(e) {
+            var sess = sessionStorage.getItem('khanh_dev_session');
+            if (sess) {
+                var filename = btn.getAttribute('download') || btn.getAttribute('href') || 'unknown_file';
+                addToHistory(filename);
+            }
+        });
+
         var wrapper = document.createElement('div');
         wrapper.className = 'schedule-btn-wrap';
         btn.parentNode.insertBefore(wrapper, btn);
@@ -3110,7 +3223,7 @@ document.addEventListener('keydown', function(e) {
             var delay = parseInt(secsInput, 10);
             if(isNaN(delay) || delay <= 0) return;
 
-            var filename = btn.getAttribute('download') || 'file';
+            var filename = btn.getAttribute('download') || btn.getAttribute('href') || 'file';
             var url = btn.getAttribute('href') || '#';
 
             var newTask = {
@@ -3126,6 +3239,7 @@ document.addEventListener('keydown', function(e) {
             renderTasks();
 
             document.getElementById('scheduler-panel').classList.add('open');
+            switchSchedTab('queue'); // Show queue tab when scheduling
         });
 
         wrapper.appendChild(schedBtn);
